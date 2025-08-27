@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hemodialysis UFR Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #a7f3d0 0%, #3b82f6 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        .stepper-item {
+            position: relative;
+        }
+        
+        .stepper-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 1.75rem;
+            left: 0.875rem;
+            width: 2px;
+            height: calc(100% - 1.75rem);
+            background: linear-gradient(to bottom, #10b981, #3b82f6);
+            z-index: 1;
+        }
+        
+        @media (min-width: 1024px) {
+            .stepper-item:not(:last-child)::after {
+                top: 2rem;
+                left: 1rem;
+                height: calc(100% - 2rem);
+            }
+        }
+        
+        .stepper-circle {
+            position: relative;
+            z-index: 2;
+            background: white;
+        }
+        
+        .chip {
+            transition: all 0.2s ease;
+        }
+        
+        .chip:hover {
+            transform: translateY(-1px);
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,253,250,0.95) 100%);
+            backdrop-filter: blur(10px);
+        }
+        
+        .warning-text {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+        }
+        
+        /* Cute animated icons */
+        .icon-bounce {
+            animation: bounce 2s infinite;
+        }
+        
+        .icon-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .icon-spin-slow {
+            animation: spin 3s linear infinite;
+        }
+        
+        .icon-wiggle {
+            animation: wiggle 2s ease-in-out infinite;
+        }
+        
+        .icon-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .danger-flash {
+            animation: dangerFlash 1s ease-in-out infinite;
+            color: #dc2626 !important;
+            font-weight: bold;
+        }
+        
+        @keyframes dangerFlash {
+            0%, 50% {
+                opacity: 1;
+                color: #dc2626;
+            }
+            25%, 75% {
+                opacity: 0.3;
+                color: #ef4444;
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% {
+                transform: translate3d(0,0,0);
+            }
+            40%, 43% {
+                transform: translate3d(0,-8px,0);
+            }
+            70% {
+                transform: translate3d(0,-4px,0);
+            }
+            90% {
+                transform: translate3d(0,-2px,0);
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        @keyframes wiggle {
+            0%, 7% {
+                transform: rotateZ(0);
+            }
+            15% {
+                transform: rotateZ(-15deg);
+            }
+            20% {
+                transform: rotateZ(10deg);
+            }
+            25% {
+                transform: rotateZ(-10deg);
+            }
+            30% {
+                transform: rotateZ(6deg);
+            }
+            35% {
+                transform: rotateZ(-4deg);
+            }
+            40%, 100% {
+                transform: rotateZ(0);
+            }
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-6px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-6 lg:mb-8">
+            <div class="inline-flex items-center gap-2 lg:gap-3 bg-white/90 backdrop-blur-sm px-4 lg:px-6 py-2 lg:py-3 rounded-2xl shadow-lg mb-3 lg:mb-4">
+                <i data-lucide="activity" class="w-6 lg:w-8 h-6 lg:h-8 text-emerald-600 icon-bounce"></i>
+                <h1 class="text-lg lg:text-2xl font-bold text-gray-800">Hemodialysis UFR Calculator</h1>
+            </div>
+            <p class="text-white/90 text-base lg:text-lg px-4">หน่วยไตเทียม สถาบันบำราศนราดูร</p>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-4 lg:gap-8">
+            <!-- Input Section -->
+            <div class="bg-white/95 backdrop-blur-sm rounded-xl lg:rounded-2xl shadow-xl p-4 lg:p-6">
+                <h2 class="text-lg lg:text-xl font-semibold text-gray-800 mb-4 lg:mb-6 flex items-center gap-2">
+                    <i data-lucide="calculator" class="w-4 lg:w-5 h-4 lg:h-5 text-emerald-600 icon-spin-slow"></i>
+                    ข้อมูลการคำนวณ
+                </h2>
+
+                <div class="space-y-4 lg:space-y-6">
+                    <!-- Step 1: UF Goal -->
+                    <div class="stepper-item flex gap-3 lg:gap-4">
+                        <div class="stepper-circle w-7 lg:w-8 h-7 lg:h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white font-semibold text-xs lg:text-sm">1</div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <i data-lucide="droplets" class="w-3 lg:w-4 h-3 lg:h-4 text-blue-500 icon-float"></i>
+                                UF goal (ml)
+                            </label>
+                            <input type="number" id="ufGoal" step="50" placeholder="เช่น 2500" 
+                                   class="w-full px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base border border-gray-200 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Total UF -->
+                    <div class="stepper-item flex gap-3 lg:gap-4">
+                        <div class="stepper-circle w-7 lg:w-8 h-7 lg:h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white font-semibold text-xs lg:text-sm">2</div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <i data-lucide="beaker" class="w-3 lg:w-4 h-3 lg:h-4 text-purple-500 icon-pulse"></i>
+                                Total UF (ml) - ปริมาณน้ำที่ดึงออกไปแล้ว
+                            </label>
+                            <input type="number" id="totalUF" step="50" placeholder="เช่น 1200" 
+                                   class="w-full px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base border border-gray-200 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Time Elapsed -->
+                    <div class="stepper-item flex gap-3 lg:gap-4">
+                        <div class="stepper-circle w-7 lg:w-8 h-7 lg:h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white font-semibold text-xs lg:text-sm">3</div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <i data-lucide="timer" class="w-3 lg:w-4 h-3 lg:h-4 text-blue-500 icon-wiggle"></i>
+                                เวลาที่ล้างไตไปแล้ว (นาที)
+                            </label>
+                            <input type="number" id="timeMinutes" placeholder="เช่น 120" 
+                                   class="w-full px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base border border-gray-200 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all mb-3">
+                            <div class="flex flex-wrap gap-1.5 lg:gap-2">
+                                <button onclick="setTimeMinutes(30)" class="chip px-2 lg:px-3 py-1 bg-emerald-100 text-emerald-700 rounded-md lg:rounded-lg text-xs lg:text-sm hover:bg-emerald-200">30</button>
+                                <button onclick="setTimeMinutes(60)" class="chip px-2 lg:px-3 py-1 bg-emerald-100 text-emerald-700 rounded-md lg:rounded-lg text-xs lg:text-sm hover:bg-emerald-200">60</button>
+                                <button onclick="setTimeMinutes(90)" class="chip px-2 lg:px-3 py-1 bg-emerald-100 text-emerald-700 rounded-md lg:rounded-lg text-xs lg:text-sm hover:bg-emerald-200">90</button>
+                                <button onclick="setTimeMinutes(120)" class="chip px-2 lg:px-3 py-1 bg-emerald-100 text-emerald-700 rounded-md lg:rounded-lg text-xs lg:text-sm hover:bg-emerald-200">120</button>
+                                <button onclick="setTimeMinutes(180)" class="chip px-2 lg:px-3 py-1 bg-emerald-100 text-emerald-700 rounded-md lg:rounded-lg text-xs lg:text-sm hover:bg-emerald-200">180</button>
+                                <button onclick="setTimeMinutes(240)" class="chip px-2 lg:px-3 py-1 bg-emerald-100 text-emerald-700 rounded-md lg:rounded-lg text-xs lg:text-sm hover:bg-emerald-200">240</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Total Hours -->
+                    <div class="stepper-item flex gap-3 lg:gap-4">
+                        <div class="stepper-circle w-7 lg:w-8 h-7 lg:h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white font-semibold text-xs lg:text-sm">4</div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <i data-lucide="clock" class="w-3 lg:w-4 h-3 lg:h-4 text-blue-500 icon-pulse"></i>
+                                เวลาล้างไตทั้งหมด (ชั่วโมง)
+                            </label>
+                            <input type="number" id="totalHours" value="4" step="0.5" placeholder="เช่น 4" 
+                                   class="w-full px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base border border-gray-200 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Calculate Button -->
+                    <div class="flex gap-3 lg:gap-4">
+                        <div class="w-7 lg:w-8"></div>
+                        <button onclick="calculateUFR()" 
+                                class="flex-1 bg-gradient-to-r from-emerald-500 to-blue-500 text-white px-4 lg:px-6 py-2.5 lg:py-3 rounded-lg lg:rounded-xl font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-2 text-sm lg:text-base">
+                            <i data-lucide="calculator" class="w-4 lg:w-5 h-4 lg:h-5 icon-bounce"></i>
+                            คำนวณ UFR
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="space-y-4 lg:space-y-6">
+                <!-- Results Card -->
+                <div id="resultBox" class="result-card rounded-xl lg:rounded-2xl shadow-xl p-4 lg:p-6 hidden">
+                    <h2 class="text-lg lg:text-xl font-semibold text-gray-800 mb-3 lg:mb-4 flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-4 lg:w-5 h-4 lg:h-5 text-emerald-600 icon-float"></i>
+                        ผลการคำนวณ
+                    </h2>
+                    <div id="resultContent" class="space-y-2 lg:space-y-3"></div>
+                </div>
+
+                <!-- Warning Card -->
+                <div class="warning-text rounded-xl lg:rounded-2xl shadow-lg p-4 lg:p-6">
+                    <h3 class="text-base lg:text-lg font-semibold text-amber-800 mb-3 flex items-center gap-2">
+                        <i data-lucide="alert-triangle" class="w-4 lg:w-5 h-4 lg:h-5 icon-wiggle"></i>
+                        คำแนะนำสำคัญ
+                    </h3>
+                    <ul class="text-xs lg:text-sm text-amber-700 space-y-2">
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check-circle" class="w-3 lg:w-4 h-3 lg:h-4 mt-0.5 text-amber-600 flex-shrink-0"></i>
+                            <span>ค่า UFR ไม่ควรเกิน 13 mL/kg/hr (บางแนวทางแนะนำ 10–12 mL/kg/hr)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="alert-circle" class="w-3 lg:w-4 h-3 lg:h-4 mt-0.5 text-amber-600 flex-shrink-0"></i>
+                            <span>หากเกิน → เสี่ยงความดันตก, ตะคริว, ภาวะแทรกซ้อนหัวใจ</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="info" class="w-3 lg:w-4 h-3 lg:h-4 mt-0.5 text-amber-600 flex-shrink-0"></i>
+                            <span>Tip: หากต้องการค่า mL/kg/hr ให้นำค่า mL/hr ที่คำนวณได้ไปหารด้วยน้ำหนักตัวแห้ง (kg)</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        function setTimeMinutes(minutes) {
+            document.getElementById('timeMinutes').value = minutes;
+        }
+
+        function calculateUFR() {
+            const ufGoal = parseFloat(document.getElementById('ufGoal').value);
+            const totalUF = parseFloat(document.getElementById('totalUF').value);
+            const timeMinutes = parseFloat(document.getElementById('timeMinutes').value);
+            const totalHours = parseFloat(document.getElementById('totalHours').value);
+
+            // Validation
+            if (!ufGoal || totalUF === undefined || !timeMinutes || !totalHours) {
+                alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+                return;
+            }
+
+            if (ufGoal <= 0 || totalUF < 0 || timeMinutes <= 0 || totalHours <= 0) {
+                alert('กรุณากรอกค่าที่ถูกต้อง');
+                return;
+            }
+
+            if (timeMinutes > (totalHours * 60)) {
+                alert('เวลาที่ล้างไปแล้วไม่ควรเกินเวลาทั้งหมด');
+                return;
+            }
+
+            if (totalUF > ufGoal) {
+                alert('Total UF ไม่ควรเกิน UF goal');
+                return;
+            }
+
+            // Calculations
+            const totalMinutes = totalHours * 60;
+            const remainingMinutes = totalMinutes - timeMinutes;
+            
+            // Calculate remaining UF that needs to be removed
+            const remainingUF = ufGoal - totalUF;
+            
+            // Current UFR calculation (remaining UF / remaining time)
+            const currentUFRPerMinute = remainingMinutes > 0 ? remainingUF / remainingMinutes : 0; // mL/min
+            const currentUFRPerHour = currentUFRPerMinute * 60; // mL/hr
+
+            // Display results
+            displayResults({
+                ufGoal: ufGoal,
+                totalUF: totalUF,
+                timeElapsed: timeMinutes,
+                totalTime: totalHours,
+                currentUFR: currentUFRPerHour,
+                remainingTime: remainingMinutes,
+                remainingUF: remainingUF
+            });
+        }
+
+        function displayResults(data) {
+            const resultBox = document.getElementById('resultBox');
+            const resultContent = document.getElementById('resultContent');
+            
+            const timeElapsedHours = (data.timeElapsed / 60).toFixed(1);
+            const remainingHours = (data.remainingTime / 60).toFixed(1);
+            
+            resultContent.innerHTML = `
+                <div class="grid gap-3">
+                    <div class="bg-white/70 rounded-lg p-3 flex justify-between items-center">
+                        <span class="text-gray-600">UF goal:</span>
+                        <span class="font-semibold text-emerald-700">${data.ufGoal} ml</span>
+                    </div>
+                    <div class="bg-white/70 rounded-lg p-3 flex justify-between items-center">
+                        <span class="text-gray-600">Total UF (ดึงออกแล้ว):</span>
+                        <span class="font-semibold text-purple-700">${data.totalUF} ml</span>
+                    </div>
+                    <div class="bg-white/70 rounded-lg p-3 flex justify-between items-center">
+                        <span class="text-gray-600">เวลาที่ล้างไปแล้ว:</span>
+                        <span class="font-semibold text-blue-700">${data.timeElapsed} นาที (${timeElapsedHours} ชม.)</span>
+                    </div>
+                    <div class="bg-white/70 rounded-lg p-3 flex justify-between items-center">
+                        <span class="text-gray-600">เวลาล้างไตทั้งหมด:</span>
+                        <span class="font-semibold text-gray-700">${data.totalTime} ชั่วโมง</span>
+                    </div>
+
+                    <div class="bg-blue-50 rounded-lg p-3 border border-blue-200 ${data.currentUFR > 780 ? 'bg-red-50 border-red-200' : ''}">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-gray-600">UFR ณ เวลาปัจจุบัน:</span>
+                            <span class="font-bold ${data.currentUFR > 780 ? 'danger-flash' : 'text-blue-700'}">${data.currentUFR.toFixed(1)} mL/hr</span>
+                        </div>
+                        <div class="text-xs ${data.currentUFR > 780 ? 'danger-flash' : 'text-blue-600'}">${(data.currentUFR/60).toFixed(2)} mL/min</div>
+                        ${data.currentUFR > 780 ? `
+                        <div class="mt-2 p-2 bg-red-100 border border-red-300 rounded-md">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="alert-triangle" class="w-4 h-4 text-red-600 danger-flash"></i>
+                                <span class="text-xs text-red-700 font-semibold danger-flash">⚠️ UFR เกิน 13 mL/kg/hr สำหรับผู้ป่วย 60 kg!</span>
+                            </div>
+                            <div class="text-xs text-red-600 mt-1">เสี่ยงต่อภาวะแทรกซ้อน กรุณาปรับลดอัตรา</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    ${data.remainingTime > 0 ? `
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-gray-600">เวลาที่เหลือ:</span>
+                            <span class="font-semibold text-gray-700">${data.remainingTime} นาที (${remainingHours} ชม.)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">UF ที่เหลือ:</span>
+                            <span class="font-semibold text-gray-700">${data.remainingUF.toFixed(0)} ml</span>
+                        </div>
+                    </div>
+                    ` : `
+                    <div class="bg-green-50 rounded-lg p-3 border border-green-200">
+                        <div class="text-center text-green-700 font-semibold">
+                            <i data-lucide="check-circle" class="w-5 h-5 inline mr-2"></i>
+                            การล้างไตเสร็จสิ้นแล้ว
+                        </div>
+                    </div>
+                    `}
+                </div>
+            `;
+            
+            resultBox.classList.remove('hidden');
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Re-initialize icons for new content
+            lucide.createIcons();
+        }
+
+        // Auto-calculate when Enter is pressed
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculateUFR();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'975a053680c11d2f',t:'MTc1NjI4MTQ3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
